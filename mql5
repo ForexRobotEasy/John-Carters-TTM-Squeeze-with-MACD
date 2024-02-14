@@ -1,0 +1,150 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                               John Carters TTM Squeeze with MACD |
+//|                                Developer's site: forexroboteasy.com |
+//|                                                      Forex Robot Easy Team |
+//|                                         https://www.forexroboteasy.com |
+//+------------------------------------------------------------------+
+
+#property copyright 'Forex Robot Easy Team'
+#property link      'https://www.forexroboteasy.com'
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Initialize and attach TTM Squeeze indicator
+   IndicatorBuffers(2);
+   SetIndexBuffer(0, ttmSqueezeBuffer);
+   SetIndexStyle(0, DRAW_NONE);
+   SetIndexEmptyValue(0, EMPTY_VALUE);
+   SetIndexDrawBegin(0, 0);
+   
+   // Initialize and attach MACD indicator
+   IndicatorBuffers(3);
+   SetIndexBuffer(1, macdBuffer);
+   SetIndexBuffer(2, signalBuffer);
+   SetIndexBuffer(3, histogramBuffer);
+   SetIndexStyle(1, DRAW_LINE);
+   SetIndexStyle(2, DRAW_LINE);
+   SetIndexStyle(3, DRAW_HISTOGRAM);
+   SetIndexEmptyValue(1, EMPTY_VALUE);
+   SetIndexEmptyValue(2, EMPTY_VALUE);
+   SetIndexEmptyValue(3, EMPTY_VALUE);
+   SetIndexDrawBegin(1, 0);
+   SetIndexDrawBegin(2, 0);
+   SetIndexDrawBegin(3, 0);
+   
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+   // Calculate TTM Squeeze
+   for (int i = prev_calculated; i < rates_total; i++)
+   {
+      // Calculate Bollinger Bands
+      double bbUpper = iBands(NULL, 0, 20, 2, 0, PRICE_CLOSE, MODE_UPPER, i);
+      double bbLower = iBands(NULL, 0, 20, 2, 0, PRICE_CLOSE, MODE_LOWER, i);
+      
+      // Calculate Keltner Channels
+      double kcUpper = iKeltner(NULL, 0, 20, 1.5, MODE_SMA, PRICE_CLOSE, MODE_UPPER, i);
+      double kcLower = iKeltner(NULL, 0, 20, 1.5, MODE_SMA, PRICE_CLOSE, MODE_LOWER, i);
+      
+      // Check if Bollinger Bands are inside Keltner Channels
+      if (bbUpper < kcUpper && bbLower > kcLower)
+         ttmSqueezeBuffer[i] = 0; // Print black dot
+      else
+         ttmSqueezeBuffer[i] = EMPTY_VALUE;
+   }
+   
+   // Calculate MACD
+   for (int i = prev_calculated; i < rates_total; i++)
+   {
+      double macdLine = iMACD(NULL, 0, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, i);
+      double signalLine = iMACD(NULL, 0, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, i);
+      double histogram = iMACD(NULL, 0, 12, 26, 9, PRICE_CLOSE, MODE_HIST, i);
+      
+      macdBuffer[i] = macdLine;
+      signalBuffer[i] = signalLine;
+      histogramBuffer[i] = histogram;
+   }
+   
+   return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Custom trading functions                                         |
+//+------------------------------------------------------------------+
+bool IsMarketBreakout(const int index)
+{
+   // Check if the 'squeeze' signal indicates a potential market breakout
+   return (ttmSqueezeBuffer[index - 1] == 0 && ttmSqueezeBuffer[index] == EMPTY_VALUE);
+}
+
+void GenerateBuySignal(const int index)
+{
+   // Generate buy signal when market breakout occurs
+   // Place buy order with customizable parameters
+   // Set stop-loss and take-profit levels
+}
+
+void GenerateSellSignal(const int index)
+{
+   // Generate sell signal when market breakout occurs
+   // Place sell order with customizable parameters
+   // Set stop-loss and take-profit levels
+}
+
+//+------------------------------------------------------------------+
+//| Custom error handling and debugging functions                    |
+//+------------------------------------------------------------------+
+void HandleError(const int error)
+{
+   // Handle errors and display appropriate messages
+}
+
+void Debug(const string message)
+{
+   // Print debug messages for troubleshooting
+}
+
+//+------------------------------------------------------------------+
+//| Custom testing and validation functions                          |
+//+------------------------------------------------------------------+
+void TestAndValidate()
+{
+   // Conduct thorough testing using historical data
+   // Compare results with manual analysis
+}
+
+//+------------------------------------------------------------------+
+//| Custom code maintenance and support functions                    |
+//+------------------------------------------------------------------+
+void MaintainAndSupport()
+{
+   // Provide ongoing support for bug fixes and updates
+   // Adapt the code to any changes in the trading environment
+}
+
+//+------------------------------------------------------------------+
+//| Custom user guide and documentation functions                    |
+//+------------------------------------------------------------------+
+void ProvideDocumentation()
+{
+   // Document the code, explaining its functionality and usage
+   // Include examples and step-by-step instructions for users
+}
